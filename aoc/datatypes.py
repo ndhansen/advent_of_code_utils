@@ -31,10 +31,17 @@ class Coord(NamedTuple):
             of the corner.
         """
         neighbors = self.get_neighbors()
+
+        def filter_below_bounds(coord: Coord) -> bool:
+            return coord.row > -1 and coord.col > -1
+
         # Filter out neighbors that are smaller than the top row or left column
-        neighbors = list(filter(lambda coord: coord.row > -1 and coord.col > -1, neighbors))
+        neighbors = list(filter(filter_below_bounds, neighbors))
+
+        def filter_above_bounds(coord: Coord) -> bool:
+            return coord.row <= corner.row and coord.col <= corner.col
+
         # Filter out the neighbors that are larger than the corner row or column
-        neighbors = list(
-            filter(lambda coord: coord.row <= corner.row and coord.col <= corner.col, neighbors)
-        )
+        neighbors = list(filter(filter_above_bounds, neighbors))
+
         return neighbors
