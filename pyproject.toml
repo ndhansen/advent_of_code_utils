@@ -18,6 +18,7 @@ dev = [
   "bpython>=0.24",
   "pytest-pudb>=0.7.0",
   "pytest-cov>=5.0",
+  "regex>=24.9",
 ]
 
 [tool.ruff]
