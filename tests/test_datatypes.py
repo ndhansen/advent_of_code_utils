@@ -1,3 +1,5 @@
+import pytest
+
 from aoc import Coord
 
 
@@ -157,3 +159,45 @@ def test_coord_get_neighbors_limited__left_column() -> None:
     assert Coord(1, 1) in neighbors
     assert Coord(2, 0) in neighbors
     assert Coord(2, 1) in neighbors
+
+
+def test_coord_neg_zero() -> None:
+    # Create a point at the origin
+    point = Coord(0, 0)
+
+    # Check that the negative is still at the origin
+    assert -point == Coord(0, 0)
+
+
+def test_coord_neg_positive() -> None:
+    # Create a point at a positive x and y coordinate
+    point = Coord(3, 6)
+
+    # Check that the negative is negative in both axes
+    assert -point == Coord(-3, -6)
+
+
+def test_coord_neg_negative() -> None:
+    # Create a point at a negative x and y coordinate
+    point = Coord(-3, -6)
+
+    # Check that the negative is positive in both axes
+    assert -point == Coord(3, 6)
+
+
+def test_add_invalid_type() -> None:
+    with pytest.raises(TypeError):
+        _ = Coord(0, 0) + 2
+
+
+def test_coord_add() -> None:
+    assert Coord(1, 3) + Coord(3, 2) == Coord(4, 5)
+
+
+def test_sub_invalid_type() -> None:
+    with pytest.raises(TypeError):
+        _ = Coord(0, 0) - 2
+
+
+def test_coord_sub() -> None:
+    assert Coord(5, 2) - Coord(2, 3) == Coord(3, -1)

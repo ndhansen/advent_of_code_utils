@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import itertools
 from typing import NamedTuple
 
@@ -6,7 +8,22 @@ class Coord(NamedTuple):
     row: int
     col: int
 
-    def get_neighbors(self) -> list["Coord"]:
+    def __add__(self, other: object) -> Coord:
+        if not isinstance(other, Coord):
+            msg = "Only Coords can be added together."
+            raise TypeError(msg)
+        return Coord(self.row + other.row, self.col + other.col)
+
+    def __neg__(self) -> Coord:
+        return Coord(-self.row, -self.col)
+
+    def __sub__(self, other: object) -> Coord:
+        if not isinstance(other, Coord):
+            msg = "Only Coords can be subtracted."
+            raise TypeError(msg)
+        return Coord(self.row - other.row, self.col - other.col)
+
+    def get_neighbors(self) -> list[Coord]:
         """Get all neighboring coords to coordinate.
 
         Returns:
@@ -19,7 +36,7 @@ class Coord(NamedTuple):
             all_neighbors.append(Coord(self.row + row, self.col + col))
         return all_neighbors
 
-    def get_neighbors_limited(self, corner: "Coord") -> list["Coord"]:
+    def get_neighbors_limited(self, corner: Coord) -> list[Coord]:
         """Gets all neighboring coords to the coordinate, but stays within the bounds of given by
         the corner.
 
@@ -42,6 +59,4 @@ class Coord(NamedTuple):
             return coord.row <= corner.row and coord.col <= corner.col
 
         # Filter out the neighbors that are larger than the corner row or column
-        neighbors = list(filter(filter_above_bounds, neighbors))
-
-        return neighbors
+        return list(filter(filter_above_bounds, neighbors))

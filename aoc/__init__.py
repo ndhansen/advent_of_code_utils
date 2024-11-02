@@ -1,1 +1,3 @@
-from aoc.datatypes import Coord  # noqa
+from aoc.datatypes import Coord
+
+__all__ = ["Coord"]
