@@ -1,7 +1,15 @@
 from __future__ import annotations
 
 import itertools
+from enum import Enum
 from typing import NamedTuple
+
+
+class Direction(Enum):
+    NORTH = "N"
+    SOUTH = "S"
+    WEST = "W"
+    EAST = "E"
 
 
 class Coord(NamedTuple):
