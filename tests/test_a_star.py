@@ -1,8 +1,11 @@
 from collections.abc import Iterator
 from dataclasses import dataclass
 
+import pytest
+
+from aoc.a_star import Cost, Heuristic, Neighbors, a_star
 from aoc.datatypes import Coord
-from aoc.search import Cost, Heuristic, Neighbors, a_star
+from aoc.exceptions import UnsolveableError
 
 
 @dataclass
@@ -117,3 +120,23 @@ def test_middle_wall() -> None:
 
     assert expected_path == actual_path
     assert expected_cost == actual_cost
+
+
+def test_unsolveable() -> None:
+    # fmt: off
+    maze = (
+        "Sx.\n"
+        "xx.\n"
+        "T..\n"
+    )
+    # fmt: on
+
+    test_maze = parse_maze(maze)
+    with pytest.raises(UnsolveableError):
+        a_star(
+            test_maze.start,
+            test_maze.end,
+            MazeHeuristic(),
+            MazeCost(),
+            MazeNeighbors(test_maze),
+        )

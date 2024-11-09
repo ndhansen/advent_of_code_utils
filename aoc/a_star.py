@@ -1,7 +1,9 @@
 import heapq
 from collections import defaultdict
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from typing import Protocol, TypeVar
+
+from aoc.exceptions import UnsolveableError
 
 T = TypeVar("T")
 
@@ -11,14 +13,14 @@ class Heuristic(Protocol):
 
 
 class Cost(Protocol):
-    def __call__(self, paths: dict[T, T], current: T, last: T) -> float: ...
+    def __call__(self, paths: Mapping[T, T], current: T, last: T | None) -> float: ...
 
 
 class Neighbors(Protocol):
-    def __call__(self, current: T, paths: dict[T, T]) -> Iterator[T]: ...
+    def __call__(self, current: T, paths: Mapping[T, T]) -> Iterator[T]: ...
 
 
-def _reconstruct_path(paths: dict[T, T], start: T, goal: T) -> list[T]:
+def _reconstruct_path(paths: Mapping[T, T], start: T, goal: T) -> list[T]:
     path = [goal]
     current = goal
     while current in paths:
@@ -60,4 +62,4 @@ def a_star(
                 )
 
     msg = "Could not find a path."
-    raise ValueError(msg)
+    raise UnsolveableError(msg)
