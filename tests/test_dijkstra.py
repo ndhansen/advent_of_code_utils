@@ -6,7 +6,7 @@ from aoc import dijkstra
 from aoc.exceptions import UnsolveableError
 
 
-class CostMappingFunc[S](dijkstra.Cost):
+class CostMappingFunc[S](dijkstra.Cost[S]):
     def __init__(self, cost_map: Mapping[tuple[S, S], float]) -> None:
         self.cost_map = cost_map
 
@@ -38,6 +38,8 @@ def test_dijkstra__no_solution() -> None:
         "E": {"A", "B"},
     }
 
-    cost_func = lambda _, __, ___: 1
+    def dumb_cost_func[S](paths: Mapping[S, set[S]], current: S, last: S) -> float:  # noqa: ARG001
+        return 1.0
+
     with pytest.raises(UnsolveableError):
-        dijkstra.dijkstra(start="A", goal="D", paths=paths, cost_func=cost_func)
+        dijkstra.dijkstra(start="A", goal="D", paths=paths, cost_func=dumb_cost_func)

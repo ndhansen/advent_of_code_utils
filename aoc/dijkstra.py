@@ -1,31 +1,31 @@
-from collections import deque
-from collections.abc import Iterator, Mapping
-from typing import NamedTuple, Protocol, TypeVar
+from __future__ import annotations
+
+import heapq
+from collections.abc import Hashable, Iterator, Mapping
+from typing import Any, NamedTuple, Protocol
 
 from aoc.exceptions import UnsolveableError
 
-S = TypeVar("S")
 
-
-class Neighbors(Protocol):
+class Neighbors[S: Hashable](Protocol):
     def __call__(self, current: S, paths: Mapping[S, set[S]]) -> Iterator[S]: ...
 
 
-class SimpleMappingNeighborFunc(Neighbors):
+class SimpleMappingNeighborFunc[S: Hashable](Neighbors[S]):
     def __call__(self, current: S, paths: Mapping[S, set[S]]) -> Iterator[S]:
         if current not in paths:
             return
         yield from paths[current]
 
 
-class Cost(Protocol):
+class Cost[S: Hashable](Protocol):
     def __call__(self, paths: Mapping[S, set[S]], current: S, last: S) -> float: ...
 
 
-_default_neighbor_func = SimpleMappingNeighborFunc()
+_default_neighbor_func = SimpleMappingNeighborFunc[Any]()
 
 
-class _SearchPath[S](NamedTuple):
+class _SearchPath[S: Hashable](NamedTuple):
     path: list[S]
     cost: float
 
@@ -34,19 +34,19 @@ class _SearchPath[S](NamedTuple):
         return self.path[-1]
 
 
-def dijkstra(
+def dijkstra[S: Hashable](
     *,
     start: S,
     goal: S,
     paths: Mapping[S, set[S]],
-    cost_func: Cost,
-    next_func: Neighbors = _default_neighbor_func,
+    cost_func: Cost[S],
+    next_func: Neighbors[S] = _default_neighbor_func,
 ) -> tuple[list[S], float]:
     start_path = _SearchPath([start], 0.0)
-    frontier = deque([start_path])
+    frontier = [(start_path.cost, start_path)]
     seen = set()
     while frontier:
-        current_path = frontier.popleft()
+        _, current_path = heapq.heappop(frontier)
         if current_path.current == goal:
             return current_path.path, current_path.cost
         if current_path.current in seen:
@@ -54,12 +54,11 @@ def dijkstra(
         seen.add(current_path.current)
 
         for next_node in next_func(current_path.current, paths=paths):
-            frontier.append(
-                _SearchPath(
-                    [*current_path.path, next_node],
-                    current_path.cost + cost_func(paths, next_node, current_path.current),
-                ),
+            next_search_path = _SearchPath(
+                [*current_path.path, next_node],
+                current_path.cost + cost_func(paths, next_node, current_path.current),
             )
+            heapq.heappush(frontier, (next_search_path.cost, next_search_path))
 
     msg = "No paths found"
     raise UnsolveableError(msg)

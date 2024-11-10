@@ -1,4 +1,4 @@
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 
 import pytest
@@ -57,26 +57,26 @@ def parse_maze(maze: str) -> Maze:
     return Maze(start=start, end=end, floors=floors, walls=walls)
 
 
-class MazeHeuristic(Heuristic):
+class MazeHeuristic(Heuristic[Coord]):
     def __call__(self, current: Coord, target: Coord) -> float:
         row_diff = abs((current - target).row)
         col_diff = abs((current - target).col)
         return float(row_diff + col_diff)
 
 
-class MazeNeighbors(Neighbors):
+class MazeNeighbors(Neighbors[Coord]):
     def __init__(self, maze: Maze) -> None:
         self.maze = maze
 
-    def __call__(self, current: Coord, paths: dict[Coord, Coord]) -> Iterator[Coord]:  # noqa: ARG002
+    def __call__(self, current: Coord, paths: Mapping[Coord, Coord]) -> Iterator[Coord]:  # noqa: ARG002
         for potential_neighbor in [Coord(-1, 0), Coord(1, 0), Coord(0, -1), Coord(0, 1)]:
             neighbor = current + potential_neighbor
             if neighbor in self.maze.floors:
                 yield neighbor
 
 
-class MazeCost(Cost):
-    def __call__(self, paths: dict[Coord, Coord], current: Coord, last: Coord) -> float:  # noqa: ARG002
+class MazeCost(Cost[Coord]):
+    def __call__(self, paths: Mapping[Coord, Coord], current: Coord, last: Coord) -> float:  # noqa: ARG002
         return 1
 
 

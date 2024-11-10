@@ -21,6 +21,10 @@ dev = [
   "regex>=24.9",
 ]
 
+[tool.mypy]
+strict = true
+packages = "aoc,tests"
+
 [tool.ruff]
 line-length = 100
 

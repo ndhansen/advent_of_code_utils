@@ -1,26 +1,24 @@
 import heapq
 from collections import defaultdict
 from collections.abc import Iterator, Mapping
-from typing import Protocol, TypeVar
+from typing import Protocol
 
 from aoc.exceptions import UnsolveableError
 
-T = TypeVar("T")
 
-
-class Heuristic(Protocol):
+class Heuristic[T](Protocol):
     def __call__(self, current: T, goal: T) -> float: ...
 
 
-class Cost(Protocol):
-    def __call__(self, paths: Mapping[T, T], current: T, last: T | None) -> float: ...
+class Cost[T](Protocol):
+    def __call__(self, paths: Mapping[T, T], current: T, last: T) -> float: ...
 
 
-class Neighbors(Protocol):
+class Neighbors[T](Protocol):
     def __call__(self, current: T, paths: Mapping[T, T]) -> Iterator[T]: ...
 
 
-def _reconstruct_path(paths: Mapping[T, T], start: T, goal: T) -> list[T]:
+def _reconstruct_path[T](paths: Mapping[T, T], start: T, goal: T) -> list[T]:
     path = [goal]
     current = goal
     while current in paths:
@@ -31,12 +29,12 @@ def _reconstruct_path(paths: Mapping[T, T], start: T, goal: T) -> list[T]:
     return path
 
 
-def a_star(
+def a_star[T](
     start: T,
     goal: T,
-    heuristic: Heuristic,
-    cost_func: Cost,
-    next_func: Neighbors,
+    heuristic: Heuristic[T],
+    cost_func: Cost[T],
+    next_func: Neighbors[T],
 ) -> tuple[list[T], float]:
     frontier: list[tuple[float, T]] = []
     heapq.heappush(frontier, (heuristic(start, goal), start))
