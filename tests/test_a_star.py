@@ -172,6 +172,18 @@ class MazeCost(Cost[Coord]):
             ),
             id="maze",
         ),
+        pytest.param(
+            (
+                "S>>>>v\n"
+                ".xxxxv\n"
+                ".x..T<\n"
+                ".x.xx.\n"
+                ".x....\n"
+                ".xxxx.\n"
+                "......\n"
+            ),
+            id="fastest_path",
+        ),
     ],
 )
 # fmt: on
