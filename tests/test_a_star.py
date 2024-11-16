@@ -14,24 +14,70 @@ class Maze:
     end: Coord
     floors: set[Coord]
     walls: set[Coord]
+    raw: list[str]
+
+    @staticmethod
+    def path_tiles() -> set[str]:
+        return {"v", "^", "<", ">"}
+
+
+def parse_predicted_path(maze: Maze) -> list[Coord]:
+    path_symbols = Maze.path_tiles() | {"T"}
+    for col, row in [(-1, 0), (0, 1), (0, -1), (1, 0)]:
+        current = maze.start - Coord(row=row, col=col)
+        if (
+            current.col >= 0
+            and current.col < len(maze.raw[0])
+            and current.row >= 0
+            and current.row < len(maze.raw)
+            and maze.raw[current.row][current.col] in path_symbols
+        ):
+            break
+    else:
+        msg = "No path next to start found."
+        raise ValueError(msg)
+
+    path = [maze.start, current]
+    while current != maze.end:
+        char = maze.raw[current.row][current.col]
+        match char:
+            case "v":
+                current += Coord(1, 0)
+            case "^":
+                current += Coord(-1, 0)
+            case ">":
+                current += Coord(0, 1)
+            case "<":
+                current += Coord(0, -1)
+            case _:
+                msg = "Invalid path."
+                raise ValueError(msg)
+        path.append(current)
+
+    return path
 
 
 def parse_maze(maze: str) -> Maze:
     """Take in a string that represents a maze.
 
-    The structure of the maze are dots for empty space, and x for walls, S for
-    start, and T for target.
+    The structure of the maze is as follows:
+    - Dots represent empty space
+    - x's represent walls
+    - S represents the starting position
+    - T represents the end
+    - Directional arrows show the expected fasted path.
 
     S..
-    .x.
-    ..T
+    vx.
+    >T.
 
     Args:
         maze: A visual map of a maze.
 
     Returns:
-        A maze object with start, end, and sets of floors and walls.
+        A maze object, and the fastest path from the start to the goal (inclusive).
     """
+    floor_tiles = Maze.path_tiles() | {"."}
     start = None
     end = None
     floors: set[Coord] = set()
@@ -47,14 +93,18 @@ def parse_maze(maze: str) -> Maze:
                     floors.add(Coord(row, col))
                 case "x":
                     walls.add(Coord(row, col))
-                case ".":
+                case default:
+                    if default not in floor_tiles:
+                        msg = f"Found invalid caracter {default}"
+                        raise ValueError(msg)
+
                     floors.add(Coord(row, col))
 
     if not start or not end:
         msg = "Maze needs a start and end"
         raise ValueError(msg)
 
-    return Maze(start=start, end=end, floors=floors, walls=walls)
+    return Maze(start=start, end=end, floors=floors, walls=walls, raw=maze.split("\n"))
 
 
 class MazeHeuristic(Heuristic[Coord]):
@@ -80,35 +130,54 @@ class MazeCost(Cost[Coord]):
         return 1
 
 
-def test_direct() -> None:
-    test_maze = parse_maze("S.T")
-    expected_path = [Coord(0, 0), Coord(0, 1), Coord(0, 2)]
-    expected_cost = 2
-
-    actual_path, actual_cost = a_star(
-        test_maze.start,
-        test_maze.end,
-        MazeHeuristic(),
-        MazeCost(),
-        MazeNeighbors(test_maze),
-    )
-
-    assert expected_path == actual_path
-    assert expected_cost == actual_cost
-
-
-def test_middle_wall() -> None:
-    # fmt: off
-    maze = (
-        "S..\n"
-        ".x.\n"
-        ".T."
-    )
-    # fmt: on
-
+# fmt: off
+@pytest.mark.parametrize(
+    "maze",
+    [
+        pytest.param(
+            (
+                "S>T"
+            ),
+            id="direct",
+        ),
+        pytest.param(
+            (
+                "S..\n"
+                "vx.\n"
+                ">T."
+            ),
+            id="middle_wall",
+        ),
+        pytest.param(
+            (
+                "S>>>>v\n"
+                "xxxxxv\n"
+                "v<<<<<\n"
+                "vxxxxx\n"
+                ">>>>>T\n"
+            ),
+            id="snake",
+        ),
+        pytest.param(
+            (
+                "S.....\n"
+                "vxxxx.\n"
+                "vx>>Tx\n"
+                "vx^xx.\n"
+                "vx^<<<\n"
+                "vxxxx^\n"
+                ">>>>>^\n"
+                ".xxxx.\n"
+                "......\n"
+            ),
+            id="maze",
+        ),
+    ],
+)
+# fmt: on
+def test_direct(maze: str) -> None:
     test_maze = parse_maze(maze)
-    expected_path = [Coord(0, 0), Coord(1, 0), Coord(2, 0), Coord(2, 1)]
-    expected_cost = 3
+    expected_path = parse_predicted_path(test_maze)
 
     actual_path, actual_cost = a_star(
         test_maze.start,
@@ -119,6 +188,7 @@ def test_middle_wall() -> None:
     )
 
     assert expected_path == actual_path
+    expected_cost = float(len(expected_path) - 1)
     assert expected_cost == actual_cost
 
 
