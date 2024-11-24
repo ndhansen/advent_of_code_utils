@@ -9,6 +9,7 @@ description = "Utilities I use for advent of code."
 authors = [{ name = "Nicholas Hansen" }]
 readme = "README.md"
 requires-python = ">=3.10"
+dependencies = ["rich"]
 
 [project.optional-dependencies]
 dev = [
@@ -20,6 +21,9 @@ dev = [
   "pytest-cov>=5.0",
   "regex>=24.9",
 ]
+
+[project.scripts]
+aoc = "aoc.run:run_day"
 
 [tool.mypy]
 strict = true
