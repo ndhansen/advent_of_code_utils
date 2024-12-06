@@ -16,11 +16,36 @@ class Coord(NamedTuple):
     row: int
     col: int
 
+    def move(self, direction: Direction) -> Coord:
+        delta = Coord(1, 0)
+        match direction:
+            case Direction.NORTH:
+                delta = Coord(-1, 0)
+            case Direction.SOUTH:
+                delta = Coord(1, 0)
+            case Direction.WEST:
+                delta = Coord(0, -1)
+            case Direction.EAST:
+                delta = Coord(0, 1)
+        return self + delta
+
     def __add__(self, other: object) -> Coord:
-        if not isinstance(other, Coord):
-            msg = "Only Coords can be added together."
+        if isinstance(other, Coord):
+            delta = other
+        elif isinstance(other, Direction):
+            match other:
+                case Direction.NORTH:
+                    delta = Coord(-1, 0)
+                case Direction.SOUTH:
+                    delta = Coord(1, 0)
+                case Direction.WEST:
+                    delta = Coord(0, -1)
+                case Direction.EAST:
+                    delta = Coord(0, 1)
+        else:
+            msg = "Coords can only be added with themselves and Directions."
             raise TypeError(msg)
-        return Coord(self.row + other.row, self.col + other.col)
+        return Coord(self.row + delta.row, self.col + delta.col)
 
     def __neg__(self) -> Coord:
         return Coord(-self.row, -self.col)
