@@ -16,19 +16,6 @@ class Coord(NamedTuple):
     row: int
     col: int
 
-    def move(self, direction: Direction) -> Coord:
-        delta = Coord(1, 0)
-        match direction:
-            case Direction.NORTH:
-                delta = Coord(-1, 0)
-            case Direction.SOUTH:
-                delta = Coord(1, 0)
-            case Direction.WEST:
-                delta = Coord(0, -1)
-            case Direction.EAST:
-                delta = Coord(0, 1)
-        return self + delta
-
     def __add__(self, other: object) -> Coord:
         if isinstance(other, Coord):
             delta = other
