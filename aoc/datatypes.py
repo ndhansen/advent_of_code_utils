@@ -43,6 +43,14 @@ class Coord(NamedTuple):
             raise TypeError(msg)
         return Coord(self.row - other.row, self.col - other.col)
 
+    def __mul__(self, other: object) -> Coord:
+        if isinstance(other, int):
+            return Coord(self.row * other, self.col * other)
+        if isinstance(other, Coord):
+            return Coord(self.row * other.row, self.col * other.col)
+        msg = "Only Coords or integers can be used as multiplicators."
+        raise TypeError(msg)
+
     def get_neighbors(self) -> list[Coord]:
         """Get all neighboring coords to coordinate.
 
